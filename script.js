@@ -8,28 +8,61 @@ async function sendVideo() {
     return;
   }
 
-  status.innerText = "Видео өңделуде, күте тұрыңыз...";
+  status.innerText = "⏳ Видео өңделуде, күте тұрыңыз...";
 
-  const formData = new FormData();
-  formData.append("video", fileInput.files[0]);
-  formData.append("language", lang);
+  // 1) Видео base64-ке ауыстырамыз
+  const file = fileInput.files[0];
+  const arrayBuffer = await file.arrayBuffer();
+  const bytes = new Uint8Array(arrayBuffer);
+  let binary = "";
+  bytes.forEach((b) => binary += String.fromCharCode(b));
+  const base64Video = btoa(binary);
+
+  // 2) Gradio API payload
+  const payload = {
+    data: [
+      {
+        name: file.name,
+        data: base64Video
+      },
+      lang,
+      true,   // punctuation
+      false,  // burn subtitles
+      ""      // font path
+    ]
+  };
 
   try {
     const response = await fetch(
-      "https://YOUR-HUGGINGFACE-SPACE.hf.space/run/predict",
+      "https://USERNAME-AUTOSUB.hf.space/run/predict",
       {
         method: "POST",
-        body: JSON.stringify({
-          data: [null]
-        }),
         headers: {
           "Content-Type": "application/json"
-        }
+        },
+        body: JSON.stringify(payload)
       }
     );
 
-    status.innerText = "Дайын! Hugging Face арқылы өңделді.";
+    const result = await response.json();
+
+    // Gradio outputs
+    const txtFile = result.data[0];
+    const srtFile = result.data[1];
+    const burnedVideo = result.data[2];
+
+    status.innerHTML = `
+      ✅ Дайын! <br><br>
+      📄 <a href="${txtFile}" target="_blank">Транскрипция (.txt)</a><br>
+      🎬 <a href="${srtFile}" target="_blank">Субтитр (.srt)</a>
+    `;
+
+    if (burnedVideo) {
+      status.innerHTML += `<br>🔥 <a href="${burnedVideo}" target="_blank">Burn-in видео</a>`;
+    }
+
   } catch (e) {
-    status.innerText = "Қате шықты. Кейін қайталап көріңіз.";
+    console.error(e);
+    status.innerText = "❌ Қате шықты. Hugging Face-пен байланыс болмады.";
   }
 }
