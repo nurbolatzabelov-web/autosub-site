@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+  <meta charset="UTF-8">
+  <title>AutoSub — автоматты субтитр жасау</title>
+  <meta name="description" content="Видеоға автоматты субтитр жасау. Қазақша, орысша, ағылшынша. Whisper AI.">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <h1>🎬 AutoSub</h1>
+  <p>Видеоға автоматты субтитр жасау жүйесі</p>
+
+  <input type="file" id="videoFile" accept="video/*"><br><br>
+
+  <label>Тіл:</label>
+  <select id="language">
+    <option value="auto">Авто</option>
+    <option value="kk">Қазақша</option>
+    <option value="ru">Орысша</option>
+    <option value="en">Ағылшынша</option>
+  </select>
+
+  <br><br>
+
+  <button onclick="sendVideo()">Субтитр жасау</button>
+
+  <p id="status"></p>
+
+  <script src="script.js"></script>
+</body>
+</html>
