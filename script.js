@@ -3,55 +3,35 @@ async function sendVideo() {
   const status = document.getElementById("status");
   const lang = document.getElementById("language").value;
 
-  if (fileInput.files.length === 0) {
+  if (!fileInput.files.length) {
     alert("Видео таңдаңыз!");
     return;
   }
 
-  status.innerText = "⏳ Видео Hugging Face Server-ге жіберілуде...";
+  status.innerText = "⏳ Видео серверге жіберілуде...";
 
-  const file = fileInput.files[0];
-  const arrayBuffer = await file.arrayBuffer();
-  const base64 = btoa(
-    new Uint8Array(arrayBuffer)
-      .reduce((data, byte) => data + String.fromCharCode(byte), '')
-  );
-
-  const payload = {
-    data: [
-      {
-        name: file.name,
-        data: base64
-      },
-      lang,
-      true,   // punctuation
-      false,  // burn subtitles
-      ""      // font path
-    ]
-  };
+  const formData = new FormData();
+  formData.append("video", fileInput.files[0]);
+  formData.append("language", lang);
 
   try {
     const response = await fetch(
-      "https://huggingface.co/spaces/Nuruk/autosub-app/api/predict",
+      "https://autosub-backend.onrender.com/transcribe",
       {
         method: "POST",
-        body: JSON.stringify(payload),
-        headers: {
-          "Content-Type": "application/json"
-        }
+        body: formData
       }
     );
 
     if (!response.ok) {
-      throw new Error("API жауап бермей жатыр!");
+      throw new Error("Backend жауап бермеді");
     }
 
     const result = await response.json();
 
-    // Gradio шығаратын файл сілтемелері
-    const txt = result.data[0];  // транскрипция .txt
-    const srt = result.data[1];  // субтитр .srt
-    const burned = result.data[2]; // burn-in видео
+    const txt = result.data[0];
+    const srt = result.data[1];
+    const burned = result.data[2];
 
     status.innerHTML = `
       ✅ Дайын!<br><br>
@@ -65,6 +45,6 @@ async function sendVideo() {
 
   } catch (err) {
     console.error(err);
-    status.innerText = "❌ Hugging Face API-мен байланыс орнамады.";
+    status.innerText = "❌ Backend-пен байланыс орнамады.";
   }
 }
