@@ -34,7 +34,7 @@ async function sendVideo() {
 
   try {
     const response = await fetch(
-      "https://USERNAME-AUTOSUB.hf.space/run/predict",
+      "https://huggingface.co/spaces/Nuruk/autosub-app",
       {
         method: "POST",
         headers: {
